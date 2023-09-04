@@ -1,0 +1,25 @@
+---
+# Include updates one by one. It's better not to be flexible but explicit.
+#  New file is created twice a year anyway
+
+- name: Update to Fedora 34
+  include_tasks: fedora-33-to-fedora-34.yaml
+  when: ansible_distribution_version == "33"
+
+- name: Update to Fedora 35
+  include_tasks: fedora-34-to-fedora-35.yaml
+  when: ansible_distribution_version == "34"
+
+- name: Update to Fedora 36
+  include_tasks: fedora-35-to-fedora-36.yaml
+  when: ansible_distribution_version == "35"
+
+- name: Update to Fedora 37
+  include_tasks: fedora-36-to-fedora-37.yaml
+  when: ansible_distribution_version == "36"
+
+- name: Update to Fedora 38
+  include_tasks: fedora-37-to-fedora-38.yaml
+  when: ansible_distribution_version == "37"
+
+

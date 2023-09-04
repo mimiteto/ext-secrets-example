@@ -1,0 +1,50 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: default-cluster-issuer
+spec:
+  acme:
+    email: dim.iv.ivanov@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: casa-delle-coccinelle-link-acc-key
+    solvers:
+      - selector:
+          dnsZones:
+            - "casa-delle-coccinelle.link"
+        dns01:
+          cnameStrategy: "Follow"
+          route53:
+            region: eu-central-1
+            accessKeyIDSecretRef:
+              name: cert-manager-r53-credentials
+              key: AWS_ACCESS_KEY_ID
+            secretAccessKeySecretRef:
+              name: cert-manager-r53-credentials
+              key: AWS_SECRET_ACCESS_KEY
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: cert-manager-r53-credentials
+  namespace: cert-manager
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secret-store
+    kind: ClusterSecretStore
+  target:
+    name: cert-manager-r53-credentials
+    template:
+      type: Opaque
+      data:
+        AWS_SECRET_ACCESS_KEY: "{{ .AWS_SECRET_ACCESS_KEY }}"
+        AWS_ACCESS_KEY_ID: "{{ .AWS_ACCESS_KEY_ID }}"
+  data:
+    - secretKey: AWS_ACCESS_KEY_ID
+      remoteRef:
+        key: terraform/modules/iam-user/certmanager-key
+    - secretKey: AWS_SECRET_ACCESS_KEY
+      remoteRef:
+        key: terraform/modules/iam-user/certmanager-secret

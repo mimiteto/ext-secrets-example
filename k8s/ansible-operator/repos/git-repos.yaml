@@ -1,0 +1,11 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: ansible-operator
+  namespace: ansible-operator
+spec:
+  interval: 24h
+  ref:
+    branch: "master"
+  url: https://github.com/casa-delle-coccinelle/ansible-operator.git

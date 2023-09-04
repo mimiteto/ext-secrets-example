@@ -1,0 +1,32 @@
+---
+# Generate partitions
+- name: Create partitions
+  parted:
+    device: "{{ item.dev }}"
+    #fs_type: "{{ item.fs | default(omit) }}" # Still not supported
+    number: 1
+    state: present
+  with_items: "{{ storage }}"
+  when: storage != [] and storage != None
+
+- name: Set filesystems
+  filesystem:
+    dev: "{{ item.dev }}1"
+    fstype: "{{ item.fs }}"
+    #state: present #Not supported in module
+    force: no
+    opts: "{{ item.opts | default(omit) }}"
+  with_items: "{{ storage }}"
+  when: storage != [] and storage != None and item.fs is defined
+
+- name: Mount fs
+  mount:
+    state: mounted
+    path: "{{ item.mount_point }}"
+    src: "{{ item.dev }}1"
+    fstab: /etc/fstab
+    boot: yes
+    fstype: "{{ item.fs }}"
+    opts: "{{ item.opts | default(omit) }}"
+  with_items: "{{ storage }}"
+  when: storage != [] and storage != None and item.mount_point is defined and item.fs is defined

@@ -1,0 +1,19 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ansible-operator
+  namespace: ansible-operator
+spec:
+  interval: 24h
+  chart:
+    spec:
+      chart: helm_chart/ansible-operator
+      sourceRef:
+        kind: GitRepository
+        name: ansible-operator
+        namespace: ansible-operator
+  values:
+    resources: {}
+    image:
+      tag: 0.1.0-manual-build

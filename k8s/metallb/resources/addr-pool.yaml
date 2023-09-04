@@ -1,0 +1,9 @@
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-address-pool
+  namespace: metallb
+spec:
+  addresses:
+    - 172.16.13.0/24

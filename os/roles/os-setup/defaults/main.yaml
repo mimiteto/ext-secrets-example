@@ -1,0 +1,14 @@
+---
+install_packages: []
+uninstall_packages: []
+
+#server_hostname: "server"
+dhcp_global_domain_name: local.casa-delle-coccinelle.link
+# storage:
+#   - dev: /dev/sda
+#     fs: xfs
+#     opts: 
+#     mount_point: 
+storage: []
+
+keep_firewall: yes

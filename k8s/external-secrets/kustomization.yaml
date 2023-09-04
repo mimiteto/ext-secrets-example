@@ -1,0 +1,9 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - repos-kustomization.yaml
+  - crd-kustomization.yaml
+  - external-secrets-helm-release-kustomization.yaml
+  - resources-kustomization.yaml

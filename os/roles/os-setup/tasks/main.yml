@@ -1,0 +1,47 @@
+---
+- name: Set hostname
+  hostname:
+    name: "{{ server_hostname }}.{{ dhcp_global_domain_name }}"
+    use: systemd
+
+- name: Uninstall software
+  import_tasks: uninstall.yaml
+
+- name: Install software
+  import_tasks: install.yaml
+
+- name: Set SELinux to permissive
+  selinux:
+    state: permissive
+    policy: targeted
+  when: ansible_facts.selinux.status == 'enabled'
+
+- name: Configure power behavior
+  template:
+    dest: /etc/systemd/logind.conf
+    src: logind.conf.j2
+
+- name: Remove cockpit motd.d
+  file:
+    path: /etc/motd.d/cockpit
+    state: absent
+
+- name: Set TZ to Sofia
+  #community.general.timezone:
+  timezone:
+    name: Europe/Sofia
+    hwclock: UTC
+
+- name: Stop and disable firwalld
+  systemd:
+    name: firewalld
+    enabled: false
+    state: stopped
+  when: not keep_firewall
+
+- name: Run sensors-detect
+  command: sensors-detect --auto
+  changed_when: False
+
+- name: Storage
+  include: storage.yaml

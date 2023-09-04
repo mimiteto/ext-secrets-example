@@ -1,0 +1,6 @@
+---
+- name: Remove various generic packages
+  ansible.builtin.package:
+    name: "{{ uninstall_packages }}"
+    state: absent
+  when: uninstall_packages is defined

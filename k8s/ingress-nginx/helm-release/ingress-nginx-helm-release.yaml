@@ -1,0 +1,66 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+spec:
+  dependsOn:
+    - name: prometheus
+      namespace: prometheus
+  interval: 24h
+  chart:
+    spec:
+      chart: ingress-nginx
+      version: "4.7.1"
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: ingress-nginx
+  values:
+    controller:
+      service:
+        enableHttp: true
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+      config:
+        ssl-protocols: "TLSv1.2 TLSv1.3"
+        hsts: true
+        hsts-max-age: 86400
+        hsts-include-subdomains: true
+        enable-owasp-modsecurity-crs: true
+        enable-modsecurity: true
+        modsecurity-snippet: |
+          SecRuleEngine On
+          SecRequestBodyAccess On
+          SecRequestBodyLimit 41943040 # 40Mb (default is 12.5Mb)
+          SecRequestBodyNoFilesLimit 262144 # 250Kb (default is 128Kb)
+          SecRequestBodyLimitAction ProcessPartial
+          SecAction "id:900200,phase:1,nolog,pass,t:none,setvar:tx.allowed_methods=GET HEAD POST OPTIONS PUT PATCH DELETE" # Send ModSecurity audit logs to the stdout (only for rejected requests)
+          SecAuditLog /dev/stdout
+          SecAuditLogFormat JSON
+          SecAuditEngine RelevantOnly # could be On/Off/RelevantOnly
+        #enable-opentracing: true
+        #zipkin-service-name: nginx
+        #zipkin-collector-host: tempo.tempo.svc.cluster.local
+      ingressClassResource:
+        name: nginx
+        enabled: true
+        default: true
+        controllerValue: "k8s.io/ingress-nginx"
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      autoscalling:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 4
+        targetCPUUtilizationPercentage: 85
+        targetMemoryUtilizationPercentage: 85
+      admissionWebhooks:
+        enabled: true
+        failurePolicy: Ignore
+        port: 6443

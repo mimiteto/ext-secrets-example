@@ -1,0 +1,11 @@
+---
+# handlers file for os-setup
+- name: Enable ntp service
+  systemd:
+    name: chronyd
+    enabled: yes
+    state: started
+
+- name: systemctl daemon reload
+  systemd:
+    daemon_reload: yes

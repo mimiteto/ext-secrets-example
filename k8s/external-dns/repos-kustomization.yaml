@@ -1,0 +1,14 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: reppos
+  namespace: external-dns
+spec:
+  interval: 24h
+  path: k8s/external-dns/repos
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system

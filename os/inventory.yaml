@@ -1,0 +1,33 @@
+all:
+  hosts:
+    localhost:
+      ansible_host: 127.0.0.1
+      connection: local
+  children:
+    k3s_servers:
+      hosts:
+        lasagna:
+          become: true
+          become_user: root
+          server_hostname: "lasagna"
+          #k3s
+          k3s_registration_address: 172.16.0.13
+          #k3s_state: uninstalled
+          k3s_use_experimental: true
+          k3s_skip_validation: true #Otherwise docker fails
+          k3s_control_node: true
+          k3s_etcd_datastore: true
+          k3s_server:
+            node-external-ip: "{{ ansible_default_ipv4.address }}"
+            node-name: lasagna
+            etcd-expose-metrics: true
+            selinux: true
+            flannel-backend: host-gw
+            node-label: []
+            disable:
+              - traefik
+              - servicelb
+              - metrics-server
+              - local-storage
+              - helm-controller
+

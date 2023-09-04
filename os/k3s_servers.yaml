@@ -1,0 +1,87 @@
+---
+- hosts: "{{ target | default('localhost') }}"
+  vars:
+    # k3s_state: uninstalled
+    install_packages:
+      - git
+      - vim
+      - openssl
+      - htop
+      - ansible
+      - unzip
+      - lm-sensors
+      - python3-selinux
+      - socat  # Allows port-forward, not installed in newer Fedoras
+    pip_install_packages:
+      - name: requests
+      - name: docker
+      - name: kubernetes
+      - name: jsonpatch
+      - name: PyYAML
+
+  pre_tasks:
+    - name: Configure CGroups
+      ansible.builtin.replace:
+        path: /boot/cmdline.txt
+        replace: '\1 cgroup_enable=memory'
+        regexp: '^(.*)$'
+
+    - name: Configure prometheus storage
+      ansible.builtin.file:
+        path: /prometheus
+        owner: "65534"
+        group: "65534"
+        recurse: true
+        mode: a+rwX
+
+  roles:
+    - role: os-setup
+    - role: pip
+    - role: k3s
+    - role: docker
+    - role: fluxcd-bootstrap
+      vars:
+        api_server:
+          address: "172.16.0.13"
+          port: "6443"
+        github:
+          user: mimiteto
+          owner: casa-delle-coccinelle
+          repo: lasagna
+          token: "{{ gh_token }}"
+        git:
+          branch: main
+          path: k8s
+        kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
+        aws_access_key_id: "{{ aws_access_key_id }}"
+        aws_secret_access_key: "{{ aws_secret_access_key }}"
+      when: k3s_state != 'uninstalled'
+
+  tasks:
+    - name: Reboot server if removing k3s
+      command: reboot
+      failed_when: false
+      when: k3s_state == 'uninstalled'
+
+    - name: Get cluster ca
+      shell: 'grep certificate-authority-data /etc/rancher/k3s/k3s.yaml'
+      register: k3s_cluster_ca
+      changed_when: false
+
+    - name: Get cluster login (cert)
+      shell: 'grep client-certificate-data /etc/rancher/k3s/k3s.yaml'
+      register: k3s_cluster_cert
+      changed_when: false
+
+    - name: Get cluster login (key)
+      shell: 'grep client-key-data /etc/rancher/k3s/k3s.yaml'
+      register: k3s_cluster_key
+      changed_when: false
+
+    - name: Print connection data
+      debug:
+        var: "{{ item }}"
+      with_items:
+        - k3s_cluster_ca.stdout
+        - k3s_cluster_cert.stdout
+        - k3s_cluster_key.stdout

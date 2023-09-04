@@ -1,0 +1,36 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  dependsOn:
+    - name: prometheus
+      namespace: prometheus
+  interval: 24h
+  chart:
+    spec:
+      chart: cert-manager
+      version: "1.12.3"
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+        namespace: cert-manager
+  values:
+    global:
+      logLevel: 3
+    installCRDs: false
+    replicaCount: 1
+    image:
+      repository: quay.io/jetstack/cert-manager-controller
+    prometheus:
+      enabled: true
+      servicemonitor:
+        enabled: true
+        prometheusInstance: default
+        targetPort: 9402
+        path: /metrics
+        interval: 60s
+        scrapeTimeout: 30s
+        labels: {}

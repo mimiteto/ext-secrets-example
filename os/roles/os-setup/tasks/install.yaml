@@ -1,0 +1,36 @@
+- name: Update to Fedora if needed
+  include_tasks: fedora/update.yaml
+  when: ansible_distribution == "Fedora"
+
+- name: Update packages on Fedora
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    disable_gpg_check: yes
+    update_only: yes
+  when: ansible_distribution == "Fedora"
+
+- name: Update apt cache on Debian
+  ansible.builtin.apt:
+    update_cache: yes
+  when: ansible_distribution == "Debian"
+
+- name: Update packages on Debian
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    autoclean: yes
+  when: ansible_distribution == "Debian"
+
+- name: Install various generic packages
+  ansible.builtin.package:
+    name: "{{ install_packages }}"
+    state: present
+
+- name: Install ntp service
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  notify:
+    - Enable ntp service
+

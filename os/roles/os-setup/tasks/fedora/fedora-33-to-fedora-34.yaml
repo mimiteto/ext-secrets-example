@@ -1,0 +1,14 @@
+---
+- name: Update Fedora to 34 - prepare - force update packages
+  shell: dnf --refresh upgrade -y
+
+- name: Update Fedora to 34 - prepare - install dnf-update
+  shell: dnf install dnf-plugin-system-upgrade --best -y
+
+- name: Update Fedora to 34 - download
+  shell: dnf system-upgrade download -y --refresh --releasever=34
+
+
+- name: Update Fedora to 34 - upgrade
+  shell: dnf system-upgrade reboot -y
+
